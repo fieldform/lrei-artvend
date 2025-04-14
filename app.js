@@ -13,12 +13,7 @@ const closeBtn = document.getElementsByClassName('close')[0];
 // Fetch data from Google Sheets
 async function fetchSheetData() {
     try {
-        console.log('Fetching data from Google Sheets...');
-
-        // Fetch the actual data
         const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-        console.log('Data URL:', dataUrl);
-
         const response = await fetch(dataUrl);
 
         if (!response.ok) {
@@ -28,17 +23,12 @@ async function fetchSheetData() {
         }
 
         const data = await response.json();
-        console.log('Raw data from Google Sheets:', data);
 
         if (!data.values || data.values.length === 0) {
             console.error('No data found in the response');
             dataContainer.innerHTML = '<p class="error">No data found in the spreadsheet.</p>';
             return;
         }
-
-        // Log the first few rows for debugging
-        console.log('First row (headers):', data.values[0]);
-        console.log('Sample data rows:', data.values.slice(1, 3));
 
         displayData(data.values);
     } catch (error) {
@@ -53,18 +43,13 @@ async function fetchSheetData() {
 function convertToDirectImageUrl(driveUrl) {
     if (!driveUrl) return null;
 
-    console.log('Converting URL or ID:', driveUrl);
-
     // If it's just a file ID (no http and no file extension)
     if (!driveUrl.startsWith('http') && !driveUrl.includes('.')) {
-        console.log('Detected file ID:', driveUrl);
-        // Use the thumbnail URL format which doesn't require authentication
         return `https://drive.google.com/thumbnail?id=${driveUrl}&sz=w1000`;
     }
 
     // If it's a filename, try to map it to a file ID
     if (!driveUrl.startsWith('http')) {
-        console.log('Detected filename instead of URL:', driveUrl);
         return null;
     }
 
@@ -91,17 +76,14 @@ function convertToDirectImageUrl(driveUrl) {
 
     // If we found a file ID, return the thumbnail URL
     if (fileId) {
-        console.log('Found file ID:', fileId);
         return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
     }
 
     // If it's already a direct image URL, return it
     if (driveUrl.startsWith('http') && (driveUrl.includes('.jpg') || driveUrl.includes('.png') || driveUrl.includes('.gif'))) {
-        console.log('Using direct image URL:', driveUrl);
         return driveUrl;
     }
 
-    console.log('Could not convert URL:', driveUrl);
     return null;
 }
 
@@ -118,15 +100,22 @@ function extractImageFromTag(tagContent) {
     return null;
 }
 
+// Format URL to ensure it has a protocol
+function formatUrl(url) {
+    if (!url) return '';
+    url = url.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return `https://${url}`;
+    }
+    return url;
+}
+
 // Display the data in a table format
 function displayData(values) {
     if (!values || values.length === 0) {
         dataContainer.innerHTML = '<p>No data found.</p>';
         return;
     }
-
-    console.log('Headers:', values[0]);
-    console.log('Number of rows:', values.length);
 
     // Find the image column indices
     const thumbnailColumnIndex = values[0].findIndex(header =>
@@ -136,9 +125,6 @@ function displayData(values) {
     const imageTagColumnIndex = values[0].findIndex(header =>
         header && header.toLowerCase().includes('thumbnail preview')
     );
-
-    console.log('Thumbnail ID column index:', thumbnailColumnIndex);
-    console.log('Thumbnail Preview column index:', imageTagColumnIndex);
 
     if (thumbnailColumnIndex === -1 && imageTagColumnIndex === -1) {
         console.warn('No image columns found in the spreadsheet');
@@ -150,13 +136,11 @@ function displayData(values) {
 
     // Create cards for each data row
     for (let i = 1; i < values.length; i++) {
-        console.log(`Processing row ${i}:`, values[i]);
         const card = document.createElement('div');
         card.className = 'card';
 
         // Get the thumbnail ID for this row
         const thumbnailId = values[i][thumbnailColumnIndex];
-        console.log(`Row ${i} thumbnail ID:`, thumbnailId);
 
         // Create image container
         const imageContainer = document.createElement('div');
@@ -164,13 +148,10 @@ function displayData(values) {
 
         if (thumbnailId) {
             const imageUrl = convertToDirectImageUrl(thumbnailId);
-            console.log('Converted thumbnail URL:', imageUrl);
 
             if (imageUrl) {
-                console.log('Adding image to container:', imageUrl);
                 addImageToContainer(imageContainer, imageUrl);
             } else {
-                console.log('No valid image URL found, showing raw data');
                 const rawDataText = document.createElement('div');
                 rawDataText.className = 'raw-data';
                 rawDataText.textContent = 'No image available';
@@ -206,7 +187,8 @@ function displayData(values) {
                 } else if (header.toLowerCase() === 'website') {
                     field.className += ' link';
                     const link = document.createElement('a');
-                    link.href = values[i][index];
+                    const formattedUrl = formatUrl(values[i][index]);
+                    link.href = formattedUrl;
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
                     link.textContent = values[i][index];
@@ -235,7 +217,6 @@ function addImageToContainer(container, imageUrl) {
         return;
     }
 
-    console.log('Creating image element with URL:', imageUrl);
     const img = document.createElement('img');
     img.src = imageUrl;
     img.alt = 'Thumbnail';
@@ -249,23 +230,9 @@ function addImageToContainer(container, imageUrl) {
     img.onclick = function() {
         modal.style.display = 'block';
         modalImg.src = imageUrl;
-    };
-
-    img.onload = function() {
-        console.log('Image loaded successfully:', imageUrl);
-    };
-
-    img.onerror = function() {
-        console.error('Failed to load image:', imageUrl);
-        this.style.display = 'none';
-        const errorMsg = document.createElement('div');
-        errorMsg.className = 'error';
-        errorMsg.textContent = 'Image not available';
-        container.appendChild(errorMsg);
-    };
+    }
 
     container.appendChild(img);
-    console.log('Image element added to container');
 }
 
 // Close modal when clicking the close button
@@ -274,18 +241,11 @@ closeBtn.onclick = function() {
 }
 
 // Close modal when clicking outside the image
-modal.onclick = function(event) {
-    if (event.target === modal) {
+window.onclick = function(event) {
+    if (event.target == modal) {
         modal.style.display = 'none';
     }
 }
 
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape' && modal.style.display === 'block') {
-        modal.style.display = 'none';
-    }
-});
-
 // Initialize the application
-fetchSheetData();
+document.addEventListener('DOMContentLoaded', fetchSheetData);
