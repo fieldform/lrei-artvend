@@ -144,76 +144,88 @@ function displayData(values) {
         console.warn('No image columns found in the spreadsheet');
     }
 
-    const table = document.createElement('table');
+    // Create a grid container for the cards
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'grid-container';
 
-    // Create header row
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    values[0].forEach((header, index) => {
-        // Skip the thumbnail ID column
-        if (index === thumbnailColumnIndex) return;
-
-        const th = document.createElement('th');
-        th.textContent = header || `Column ${index + 1}`;
-        headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Create data rows
-    const tbody = document.createElement('tbody');
+    // Create cards for each data row
     for (let i = 1; i < values.length; i++) {
         console.log(`Processing row ${i}:`, values[i]);
-        const row = document.createElement('tr');
+        const card = document.createElement('div');
+        card.className = 'card';
 
         // Get the thumbnail ID for this row
         const thumbnailId = values[i][thumbnailColumnIndex];
         console.log(`Row ${i} thumbnail ID:`, thumbnailId);
 
-        values[i].forEach((cell, index) => {
-            const td = document.createElement('td');
+        // Create image container
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
 
-            // Skip the thumbnail ID column
-            if (index === thumbnailColumnIndex) {
-                return;
+        if (thumbnailId) {
+            const imageUrl = convertToDirectImageUrl(thumbnailId);
+            console.log('Converted thumbnail URL:', imageUrl);
+
+            if (imageUrl) {
+                console.log('Adding image to container:', imageUrl);
+                addImageToContainer(imageContainer, imageUrl);
+            } else {
+                console.log('No valid image URL found, showing raw data');
+                const rawDataText = document.createElement('div');
+                rawDataText.className = 'raw-data';
+                rawDataText.textContent = 'No image available';
+                imageContainer.appendChild(rawDataText);
             }
+        }
 
-            // If this is the thumbnail column and we have a thumbnail ID
-            if (index === 2 && thumbnailId) { // index 2 is the Thumbnail column
-                console.log(`Creating thumbnail for row ${i} with ID:`, thumbnailId);
+        card.appendChild(imageContainer);
 
-                // Create a container for the image
-                const container = document.createElement('div');
-                container.className = 'image-container';
-                container.style.display = 'block';
+        // Create info container
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'info-container';
 
-                const imageUrl = convertToDirectImageUrl(thumbnailId);
-                console.log('Converted thumbnail URL:', imageUrl);
+        // Add each field to the info container
+        values[0].forEach((header, index) => {
+            if (index !== thumbnailColumnIndex && values[i][index]) {
+                const field = document.createElement('div');
+                field.className = `field ${header.toLowerCase().replace(/\s+/g, '-')}`;
 
-                if (imageUrl) {
-                    console.log('Adding image to container:', imageUrl);
-                    addImageToContainer(container, imageUrl);
-                } else {
-                    console.log('No valid image URL found, showing raw data');
-                    const rawDataText = document.createElement('div');
-                    rawDataText.className = 'raw-data';
-                    rawDataText.textContent = 'No image available';
-                    container.appendChild(rawDataText);
+                if (header.toLowerCase() === 'name') {
+                    field.className += ' name';
+                    field.textContent = values[i][index];
+                } else if (header.toLowerCase() === 'instagram') {
+                    field.className += ' link';
+                    const link = document.createElement('a');
+                    // Format Instagram handle into full URL
+                    const handle = values[i][index].replace('@', '').trim();
+                    link.href = `https://www.instagram.com/${handle}`;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.textContent = `@${handle}`;
+                    field.appendChild(link);
+                } else if (header.toLowerCase() === 'website') {
+                    field.className += ' link';
+                    const link = document.createElement('a');
+                    link.href = values[i][index];
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.textContent = values[i][index];
+                    field.appendChild(link);
+                } else if (header.toLowerCase() === 'bio') {
+                    field.className += ' bio';
+                    field.textContent = values[i][index];
                 }
 
-                td.appendChild(container);
-            } else {
-                td.textContent = cell || '';
+                infoContainer.appendChild(field);
             }
-
-            row.appendChild(td);
         });
-        tbody.appendChild(row);
+
+        card.appendChild(infoContainer);
+        gridContainer.appendChild(card);
     }
-    table.appendChild(tbody);
 
     dataContainer.innerHTML = '';
-    dataContainer.appendChild(table);
+    dataContainer.appendChild(gridContainer);
 }
 
 // Helper function to add an image to a container
