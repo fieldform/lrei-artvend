@@ -6,6 +6,9 @@ const SHEET_NAME = 'Sheet1';
 // DOM Elements
 const loadingElement = document.getElementById('loading');
 const dataContainer = document.getElementById('data-container');
+const modal = document.getElementById('imageModal');
+const modalImg = document.getElementById('modalImage');
+const closeBtn = document.getElementsByClassName('close')[0];
 
 // Fetch data from Google Sheets
 async function fetchSheetData() {
@@ -55,27 +58,13 @@ function convertToDirectImageUrl(driveUrl) {
     // If it's just a file ID (no http and no file extension)
     if (!driveUrl.startsWith('http') && !driveUrl.includes('.')) {
         console.log('Detected file ID:', driveUrl);
-        // Use the preview URL format which is more reliable
+        // Use the thumbnail URL format which doesn't require authentication
         return `https://drive.google.com/thumbnail?id=${driveUrl}&sz=w1000`;
     }
 
     // If it's a filename, try to map it to a file ID
     if (!driveUrl.startsWith('http')) {
         console.log('Detected filename instead of URL:', driveUrl);
-
-        // Map of filenames to their Google Drive file IDs
-        const fileIdMap = {
-            'marthe_jocelyn_2.jpg': '1mcnKdGh0fUrPCI06hIQdoB95Cb3e9kez',
-            // Add more mappings as needed
-        };
-
-        const fileId = fileIdMap[driveUrl];
-        if (fileId) {
-            const fullUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-            console.log('Constructed full URL:', fullUrl);
-            return fullUrl;
-        }
-
         return null;
     }
 
@@ -100,13 +89,7 @@ function convertToDirectImageUrl(driveUrl) {
         fileId = ucMatch[1];
     }
 
-    // Format 4: https://drive.usercontent.google.com/download?id=FILE_ID&export=view
-    const userContentMatch = driveUrl.match(/id=([a-zA-Z0-9_-]+)/);
-    if (userContentMatch && userContentMatch[1]) {
-        fileId = userContentMatch[1];
-    }
-
-    // If we found a file ID, return the direct image URL
+    // If we found a file ID, return the thumbnail URL
     if (fileId) {
         console.log('Found file ID:', fileId);
         return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
@@ -167,6 +150,9 @@ function displayData(values) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     values[0].forEach((header, index) => {
+        // Skip the thumbnail ID column
+        if (index === thumbnailColumnIndex) return;
+
         const th = document.createElement('th');
         th.textContent = header || `Column ${index + 1}`;
         headerRow.appendChild(th);
@@ -177,37 +163,41 @@ function displayData(values) {
     // Create data rows
     const tbody = document.createElement('tbody');
     for (let i = 1; i < values.length; i++) {
+        console.log(`Processing row ${i}:`, values[i]);
         const row = document.createElement('tr');
+
+        // Get the thumbnail ID for this row
+        const thumbnailId = values[i][thumbnailColumnIndex];
+        console.log(`Row ${i} thumbnail ID:`, thumbnailId);
+
         values[i].forEach((cell, index) => {
             const td = document.createElement('td');
 
-            // Check if this cell contains an image
-            if ((index === thumbnailColumnIndex || index === imageTagColumnIndex) && cell) {
-                console.log(`Row ${i}, Column ${index}, Cell content:`, cell);
+            // Skip the thumbnail ID column
+            if (index === thumbnailColumnIndex) {
+                return;
+            }
+
+            // If this is the thumbnail column and we have a thumbnail ID
+            if (index === 2 && thumbnailId) { // index 2 is the Thumbnail column
+                console.log(`Creating thumbnail for row ${i} with ID:`, thumbnailId);
 
                 // Create a container for the image
                 const container = document.createElement('div');
                 container.className = 'image-container';
+                container.style.display = 'block';
 
-                let imageUrl = null;
-
-                // Handle Thumbnail ID column
-                if (index === thumbnailColumnIndex) {
-                    imageUrl = convertToDirectImageUrl(cell);
-                }
-                // Handle Thumbnail Preview column with -image tag
-                else if (index === imageTagColumnIndex) {
-                    imageUrl = extractImageFromTag(cell);
-                }
+                const imageUrl = convertToDirectImageUrl(thumbnailId);
+                console.log('Converted thumbnail URL:', imageUrl);
 
                 if (imageUrl) {
-                    // Add the image
+                    console.log('Adding image to container:', imageUrl);
                     addImageToContainer(container, imageUrl);
                 } else {
-                    // If we couldn't convert it, show the raw data
+                    console.log('No valid image URL found, showing raw data');
                     const rawDataText = document.createElement('div');
                     rawDataText.className = 'raw-data';
-                    rawDataText.textContent = cell;
+                    rawDataText.textContent = 'No image available';
                     container.appendChild(rawDataText);
                 }
 
@@ -228,10 +218,30 @@ function displayData(values) {
 
 // Helper function to add an image to a container
 function addImageToContainer(container, imageUrl) {
+    if (!imageUrl) {
+        console.error('No image URL provided');
+        return;
+    }
+
+    console.log('Creating image element with URL:', imageUrl);
     const img = document.createElement('img');
     img.src = imageUrl;
     img.alt = 'Thumbnail';
     img.className = 'thumbnail';
+    img.style.display = 'block';
+    img.style.width = '120px';
+    img.style.height = '120px';
+    img.style.objectFit = 'cover';
+
+    // Add click event to show modal
+    img.onclick = function() {
+        modal.style.display = 'block';
+        modalImg.src = imageUrl;
+    };
+
+    img.onload = function() {
+        console.log('Image loaded successfully:', imageUrl);
+    };
 
     img.onerror = function() {
         console.error('Failed to load image:', imageUrl);
@@ -243,7 +253,27 @@ function addImageToContainer(container, imageUrl) {
     };
 
     container.appendChild(img);
+    console.log('Image element added to container');
 }
+
+// Close modal when clicking the close button
+closeBtn.onclick = function() {
+    modal.style.display = 'none';
+}
+
+// Close modal when clicking outside the image
+modal.onclick = function(event) {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && modal.style.display === 'block') {
+        modal.style.display = 'none';
+    }
+});
 
 // Initialize the application
 fetchSheetData();
