@@ -1,5 +1,6 @@
 # Environment variables
 .env
+.envrc
 
 # Dependencies
 node_modules/
@@ -11,3 +12,20 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Nuxt.js
+.nuxt
+dist
+.output
+
+# Devenv
+.direnv
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml

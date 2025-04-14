@@ -1,6 +1,52 @@
-# Google Sheets CMS
+# Art Vend - Google Sheets Integration with Nuxt
 
-A simple CMS that uses Google Sheets as a backend and displays data including images from Google Drive.
+A modern web application that uses Google Sheets as a backend and displays data including images from Google Drive, built with Nuxt.js.
+
+## Development Environment Setup
+
+This project uses [devenv](https://github.com/cachix/devenv) to manage the development environment.
+
+### Prerequisites
+
+- [Nix](https://nixos.org/download.html) package manager
+- [direnv](https://direnv.net/) for automatic environment activation
+
+### Setup
+
+1. **Install Nix** (if not already installed):
+   ```bash
+   sh <(curl -L https://nixos.org/nix/install) --daemon
+   ```
+
+2. **Install direnv** (if not already installed):
+   ```bash
+   # macOS
+   brew install direnv
+
+   # Linux
+   sudo apt-get install direnv
+   ```
+
+3. **Enable direnv in your shell**:
+   Add the following to your shell configuration file (`.bashrc`, `.zshrc`, etc.):
+   ```bash
+   eval "$(direnv hook bash)"  # for bash
+   eval "$(direnv hook zsh)"   # for zsh
+   ```
+
+4. **Set up your .envrc file**:
+   ```bash
+   # Copy the example .envrc file
+   cp .envrc.example .envrc
+
+   # Allow direnv to use the .envrc file
+   direnv allow
+   ```
+
+5. **Enter the development environment**:
+   ```bash
+   devenv up
+   ```
 
 ## How to Use
 
@@ -21,14 +67,20 @@ A simple CMS that uses Google Sheets as a backend and displays data including im
 
 4. Make sure your Google Sheet is accessible to anyone with the link.
 
-5. Update the configuration in `app.js`:
-   ```javascript
-   const API_KEY = 'YOUR_API_KEY';
-   const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
-   const SHEET_NAME = 'YOUR_SHEET_NAME';
+5. Update the configuration in `.env`:
+   ```
+   GOOGLE_API_KEY=YOUR_API_KEY
+   SPREADSHEET_ID=YOUR_SPREADSHEET_ID
+   SHEET_NAME=YOUR_SHEET_NAME
+   WATCH_INTERVAL=300000
    ```
 
-6. Open `index.html` in a web browser to view your CMS.
+6. Start the development server:
+   ```bash
+   yarn dev
+   ```
+
+7. Open your browser and navigate to `http://localhost:3000`
 
 ## Getting a Google Drive URL
 
@@ -52,7 +104,51 @@ The `-image` tag is a simple way to specify image URLs in your spreadsheet:
 2. Create a new project or select an existing one
 3. Enable the Google Sheets API
 4. Create credentials (API key)
-5. Copy the API key and paste it into the `app.js` file
+5. Copy the API key and paste it into the `.env` file
+
+## AWS Amplify Deployment
+
+### Prerequisites
+- AWS account
+- GitHub account
+- Repository with this code
+
+### Deployment Steps
+
+1. **Push your code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+2. **Set up AWS Amplify**
+   - Go to the [AWS Amplify Console](https://console.aws.amazon.com/amplify/home)
+   - Click "New app" > "Host web app"
+   - Choose GitHub as your repository source
+   - Connect your GitHub account and select your repository
+   - Configure build settings
+   - Add environment variables:
+     - `GOOGLE_API_KEY`
+     - `SPREADSHEET_ID`
+     - `SHEET_NAME`
+     - `WATCH_INTERVAL` (optional, defaults to 300000 ms)
+
+3. **Deploy**
+   - Review the settings and click "Save and deploy"
+   - Amplify will build and deploy your application
+
+4. **Set up automatic deployments**
+   - Amplify will automatically deploy when you push changes to your GitHub repository
+   - You can configure branch protection rules in GitHub for additional security
+
+## Google Sheets Watcher
+
+The application includes a watcher that periodically checks for changes in your Google Sheet:
+
+- By default, it checks every 5 minutes (300000 ms)
+- You can change this interval by setting the `WATCH_INTERVAL` environment variable
+- The watcher only updates the UI when changes are detected
 
 ## Troubleshooting
 
@@ -60,3 +156,5 @@ The `-image` tag is a simple way to specify image URLs in your spreadsheet:
 - Make sure your API key has access to the Google Sheets API
 - Verify that the sheet name is correct (case-sensitive)
 - For the `-image` tag, make sure there's a space between `-image` and the URL
+- For AWS Amplify deployment issues, check the build logs in the Amplify Console
+- For devenv issues, try running `devenv down` and then `devenv up` again
