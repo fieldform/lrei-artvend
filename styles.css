@@ -58,6 +58,16 @@ button:hover {
     margin: 20px 0;
 }
 
+#statement {
+    width: 100%;
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 2.0rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 2px -1px rgba(0, 0, 0, 0.06);
+}
+
 #data-container {
     width: 100%;
     max-width: 950px;
