@@ -18,7 +18,8 @@ body {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.08),
+                0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -61,11 +62,52 @@ button:hover {
 #statement {
     width: 100%;
     max-width: 840px;
-    margin: 0 auto;
-    padding: 2.0rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 2px -1px rgba(0, 0, 0, 0.06);
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#statement:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#statement p {
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: #333;
+    margin: 0.45rem;
+    text-align: left;
+    max-width: 95%;
+}
+
+@media (max-width: 768px) {
+    #statement {
+        margin: 1.5rem 1rem;
+        padding: 1.5rem;
+        width: calc(100% - 2rem);
+    }
+}
+
+@media (max-width: 480px) {
+    #statement {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+        width: calc(100% - 1rem);
+    }
+
+    #statement p {
+        font-size: 1rem;
+        max-width: 100%;
+    }
 }
 
 #data-container {
