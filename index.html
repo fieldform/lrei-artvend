@@ -12,6 +12,14 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <h1 class="text-5xl md:text-7xl font-bold text-center text-gray-800 mb-8">LREI ARTVEND</h1>
+        <div class="text-center mb-8">
+            <button id="playVideoBtn" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                How-To Video
+            </button>
+        </div>
         <div id="content-section" class="bg-white rounded-lg shadow-lg p-6">
             <div id="statement" class="overflow-x-auto">
                 <p class="text-lg text-gray-700 text-center leading-relaxed">
@@ -27,6 +35,17 @@
     <div id="imageModal" class="modal">
         <span class="close">&times;</span>
         <img class="modal-content" id="modalImage">
+    </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content bg-white p-4 rounded-lg max-w-4xl mx-auto relative">
+            <span class="close absolute top-2 right-4 text-2xl cursor-pointer">&times;</span>
+            <video id="modalVideo" class="w-full rounded-lg" controls>
+                <source src="video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
     </div>
 
     <script src="app.js"></script>
