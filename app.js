@@ -247,5 +247,41 @@ window.onclick = function(event) {
     }
 }
 
+// Video Modal Functionality
+const videoModal = document.getElementById('videoModal');
+const modalVideo = document.getElementById('modalVideo');
+const playVideoBtn = document.getElementById('playVideoBtn');
+const videoCloseBtn = videoModal.querySelector('.close');
+
+// Open video modal
+playVideoBtn.onclick = function() {
+    videoModal.style.display = 'block';
+    modalVideo.play();
+}
+
+// Close video modal
+videoCloseBtn.onclick = function() {
+    videoModal.style.display = 'none';
+    modalVideo.pause();
+    modalVideo.currentTime = 0;
+}
+
+// Close video modal when clicking outside
+window.onclick = function(event) {
+    if (event.target == videoModal) {
+        videoModal.style.display = 'none';
+        modalVideo.pause();
+        modalVideo.currentTime = 0;
+    }
+}
+
+// Buy Tokens Button Functionality
+const buyTokensBtn = document.getElementById('buyTokensBtn');
+
+buyTokensBtn.onclick = function() {
+    // Open the token purchase page in a new tab
+    window.open('https://my.onecause.com/event/organizations/sf-0018000000Wc8yJAAR/events/vevt:522be272-7b6b-4745-b00e-3f54a75f5419/shop/fixed-price', '_blank');
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', fetchSheetData);
