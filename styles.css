@@ -314,9 +314,10 @@ table, thead, tbody, th, td, tr {
     justify-content: center;
     gap: 16px;
     flex-wrap: wrap;
+    margin: 0 auto;
 }
 
-.action-button {
+.button-group .action-button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -331,30 +332,26 @@ table, thead, tbody, th, td, tr {
     cursor: pointer;
 }
 
-.action-button:hover {
+.button-group .action-button:hover {
     background-color: white;
     color: #333;
 }
 
-.action-button svg {
+.button-group .action-button svg {
     width: 24px;
     height: 24px;
 }
 
-@media (max-width: 768px) {
-    .button-group {
-        gap: 12px;
-    }
+/* Override any conflicting button styles */
+body .button-group .action-button {
+    background-color: #333 !important;
+    color: white !important;
+    border: 1px solid #333 !important;
+}
 
-    .action-button {
-        padding: 10px 20px;
-        font-size: 14px;
-    }
-
-    .action-button svg {
-        width: 20px;
-        height: 20px;
-    }
+body .button-group .action-button:hover {
+    background-color: white !important;
+    color: #333 !important;
 }
 
 /* Responsive styles */
